@@ -17,6 +17,8 @@ namespace itr6.Pages
             _logger = logger;
         }
 
+        public int wazup = 69420;
+
         public void OnGet()
         {
 
