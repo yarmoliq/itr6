@@ -1,11 +1,81 @@
 ﻿@page
+@inject IJsonHelper Json;
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <h1 class="display-4">@Model.wazup</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<style>
+    textarea {
+        resize: both;
+        position: absolute;
+    }
+</style>
+
+<button onclick="createNewNote()">New Note</button>
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+
+<script>
+
+    let connection = new signalR.HubConnectionBuilder().withUrl("/noteshub").build();
+
+    connection.start().catch(err=>{
+        alert("couldnt connect");
+    }).then(() => {
+    const notes = @Json.Serialize(Model.GetNotes());
+        notes.forEach( (note) => {
+            createNewNote(note["contents"]);
+        });
+    });
+
+    const addNewNote = function(){
+        connection.invoke("AddNewNote", document.getElementById("note-contents").value);
+    }
+
+</script>
+
+<script>
+
+    let mousePosition;
+    let offset = [0, 0];
+    let div;
+    let isDown = false;
+    let movingNote;
+
+    const createNewNote = function(contents){
+        let newNote = document.createElement("textarea");
+        newNote.disabled = true;
+        newNote.value = contents;
+
+        document.body.appendChild(newNote);
+    }
+
+    document.addEventListener('mousedown',
+        function (e) {
+            movingNote = e.target;
+            isDown = true;
+            offset = [
+                movingNote.offsetLeft - e.clientX,
+                movingNote.offsetTop - e.clientY
+            ];
+        }
+    );
+
+    document.addEventListener('mouseup', function () {
+        isDown = false;
+    });
+
+    document.addEventListener('mousemove', function (event) {
+        event.preventDefault();
+        if (isDown) {
+            mousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+            movingNote.style.left = (mousePosition.x + offset[0]) + 'px';
+            movingNote.style.top = (mousePosition.y + offset[1]) + 'px';
+        }
+    });
+
+</script>

@@ -9,6 +9,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Microsoft.EntityFrameworkCore;
+using itr6.Data;
+
 namespace itr6
 {
     public class Startup
@@ -24,6 +27,10 @@ namespace itr6
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("DatabaseContext")));
+            
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,6 +57,7 @@ namespace itr6
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapHub<NotesHub>("/noteshub");
             });
         }
     }
