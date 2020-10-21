@@ -66,7 +66,7 @@ document.addEventListener('dblclick', function(event) {
     }
     else if (event.target.tagName == "HTML") {
         connection.invoke("CreateNewNote").then( (newNoteId) => {
-            createNoteHtml( { "id" : newNoteId, "contents" : "" }, event.clientX + 'px', event.clientY + 'px');
+            createNoteHtml( { "ID" : newNoteId, "Contents" : "" }, event.clientX + 'px', event.clientY + 'px');
         });
     }
 });
