@@ -27,6 +27,7 @@ const createNote = function (noteId, contents, callBack) {
     
     let textArea = document.createElement("textarea");
     textArea.setAttribute("class", "display-opened-note");
+    textArea.setAttribute("id", "display-opened-note-" + noteId);
     textArea.value = contents;
     noteContent.appendChild(textArea);
 

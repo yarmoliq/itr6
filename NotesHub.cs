@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Linq;
 using itr6.Data;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace itr6
 {
@@ -21,15 +24,43 @@ namespace itr6
             _context = context;
         }
 
-        public void AddNewNote(string contents)
+        public async Task UpdateNote(string  noteId, string newContents)
+        {
+            // _logger.LogWarning(noteId);
+            Note note = _context.Notes.Find(Convert.ToInt32(noteId));
+            if(note != null)
+            {
+                note.Contents = newContents;
+                _context.Notes.Update(note);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public string CreateNewNote()
         {
             Note newNote = new Note();
-            newNote.Contents = contents;
             newNote.DateCreated = DateTime.Now;
             newNote.LastModified = DateTime.Now;
 
             _context.Add<Note>(newNote);
             _context.SaveChanges();
+
+            return Convert.ToString(newNote.ID);
+        }
+
+        public void DeleteNote(string noteId)
+        {
+            Note note = _context.Notes.Find(Convert.ToInt32(noteId));
+            if(note != null)
+            {
+                _context.Notes.Remove(note);
+                _context.SaveChanges();
+            }
+        }
+
+        public string GetNotes()
+        {
+            return JsonSerializer.Serialize(Enumerable.ToArray(_context.Notes));
         }
     }
 }

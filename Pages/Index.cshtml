@@ -11,81 +11,120 @@
 
 <script>
 
-    let connection = new signalR.HubConnectionBuilder().withUrl("/noteshub").build();
+let connection = new signalR.HubConnectionBuilder().withUrl("/noteshub").build();
 
-    connection.start().catch(err=>{
-        alert("couldnt connect");
-    }).then(() => {
-    const notes = @Json.Serialize(Model.GetNotes());
+connection.start().catch(err=>{
+    alert("couldnt connect");
+}).then(() => {
+    connection.invoke("GetNotes").then( (data) => {
+        const notes = JSON.parse(data);
         notes.forEach( (note) => {
             createNoteHtml(note);
         });
     });
+});
 
-</script>
+const UpdateAllNotesAndFloatingNotes = function (notes) {
+    notes.forEach( (note) => {
+        const noteId = "note" + note["ID"];
+        document.getElementById("display-opened-note-" + noteId).value = note["Contents"];
+        document.getElementById("floating-note-" + noteId).value = note["Contents"];
+    });
+};
 
-<script>
+let mousePosition;
+let offset = [0, 0];
+let div;
+let isDown = false;
+let movingNote;
 
-    let mousePosition;
-    let offset = [0, 0];
-    let div;
-    let isDown = false;
-    let movingNote;
-
-    const createNoteHtml = function(note){
-        let newNote = document.createElement("textarea");
-        newNote.setAttribute("class", "floating-note");
-        newNote.value = note["contents"];
-        newNote.disabled = true;
+const createNoteHtml = function(note, x = "-1", y = "-1"){
+    let newNote = document.createElement("textarea");
+    newNote.setAttribute("class", "floating-note");
+    newNote.value = note["Contents"];
+    newNote.disabled = true;
+    if(x == "-1"){
         newNote.style.left = Math.random() * 0.8 * window.screen.width  + 'px';
         newNote.style.top  = Math.random() * 0.8 * window.screen.height + 'px';
-
-        createNote(note["id"], note["contents"], (noteDiv) => {
-            //newNote.appendChild(noteDiv);
-            newNote.setAttribute("id", "floating-note-" + noteDiv.getAttribute("id"));
-        });
-
-        //newNote.setAttribute("id", note["id"]);
-
-        document.body.appendChild(newNote);
     }
+    else {
+        newNote.style.left = x;
+        newNote.style.top  = y;
+    }
+    
+    createNote(note["ID"], note["Contents"], (noteDiv) => {
+        newNote.setAttribute("id", "floating-note-" + noteDiv.getAttribute("id"));
+    });
 
-    document.addEventListener('dblclick', function(event) {
-        if (event.target.getAttribute("class") == "floating-note") {
-            const noteId = event.target.id.split("-")[2];
-            showNote(noteId);
+    document.body.appendChild(newNote);
+};
+
+document.addEventListener('dblclick', function(event) {
+    if (event.target.getAttribute("class") == "floating-note") {
+        const noteId = event.target.id.split("-")[2];
+        showNote(noteId);
+    }
+    else if (event.target.tagName == "HTML") {
+        connection.invoke("CreateNewNote").then( (newNoteId) => {
+            createNoteHtml( { "id" : newNoteId, "contents" : "" }, event.clientX + 'px', event.clientY + 'px');
+        });
+    }
+});
+
+document.addEventListener('mousedown',
+    function (event) {
+        if(event.target.getAttribute("class") == "floating-note"){
+            movingNote = event.target;
+            isDown = true;
+            offset = [
+                movingNote.offsetLeft - event.clientX,
+                movingNote.offsetTop - event.clientY
+            ];
         }
-    });
+    }
+);
 
-    document.addEventListener('mousedown',
-        function (event) {
-            if(event.target.getAttribute("class") == "floating-note"){
-                movingNote = event.target;
-                isDown = true;
-                offset = [
-                    movingNote.offsetLeft - event.clientX,
-                    movingNote.offsetTop - event.clientY
-                ];
-            }
-        }
-    );
+document.addEventListener('mouseup', function () {
+    isDown = false;
+});
 
-    document.addEventListener('mouseup', function () {
-        isDown = false;
-    });
+document.addEventListener('mousemove', function (event) {
+    if (isDown) {
+        event.preventDefault();
+        mousePosition = {
+            x: event.clientX,
+            y: event.clientY
+        };
+        movingNote.style.left = (mousePosition.x + offset[0]) + 'px';
+        movingNote.style.top = (mousePosition.y + offset[1]) + 'px';
+    }
+});
 
-    document.addEventListener('mousemove', function (event) {
-        //if(event.target.getAttribute("class") == "floating-note"){
-            if (isDown) {
-                event.preventDefault();
-                mousePosition = {
-                    x: event.clientX,
-                    y: event.clientY
-                };
-                movingNote.style.left = (mousePosition.x + offset[0]) + 'px';
-                movingNote.style.top = (mousePosition.y + offset[1]) + 'px';
-            }
-        //}
+deleteNoteCallBack = function(noteId) {
+    let floatingNoteId = "floating-note-" + noteId;
+    let floatingNote = document.getElementById(floatingNoteId);
+    floatingNote.parentNode.removeChild(floatingNote);
+
+    let intId = noteId.split("").slice(4).join("");
+    connection.invoke("DeleteNote", intId);
+};
+
+closeNoteCallBack = function(noteId) {
+    let closedNote = document.getElementById(noteId);
+    let intId = noteId.split("").slice(4).join("");
+        
+    let newContents = document.getElementById("display-opened-note-" + noteId).value;
+    
+    connection.invoke("UpdateNote", intId, newContents).then((res) => {
+        //console.log(res);
+        updateAllNotes();
     });
+};
+
+const updateAllNotes = function() {
+    connection.invoke("GetNotes").then( (data) => {
+        UpdateAllNotesAndFloatingNotes(JSON.parse(data));
+    });
+};
 
 </script>
