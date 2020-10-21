@@ -24,7 +24,27 @@ connection.start().catch(err=>{
     });
 });
 
-const UpdateAllNotesAndFloatingNotes = function (notes) {
+connection.on("GoUpdateYall", () => {
+    updateAllNotes();
+});
+
+connection.on("DeleteNote", (noteId) => {
+    noteId = "note" + noteId;
+
+    deleteNote("smth-" + noteId); // because my delete function is stupid  :|
+
+    let floatingNoteId = "floating-note-" + noteId;
+    let floatingNote = document.getElementById(floatingNoteId);
+    floatingNote.parentNode.removeChild(floatingNote);
+
+    let intId = noteId.split("").slice(4).join("");
+});
+
+connection.on("CreateNewNote", (note) => {
+    createNoteHtml(JSON.parse(note));
+});
+
+const updateAllNotesAndFloatingNotes = function (notes) {
     notes.forEach( (note) => {
         const noteId = "note" + note["ID"];
         document.getElementById("display-opened-note-" + noteId).value = note["Contents"];
@@ -41,7 +61,7 @@ let movingNote;
 const createNoteHtml = function(note, x = "-1", y = "-1"){
     let newNote = document.createElement("textarea");
     newNote.setAttribute("class", "floating-note");
-    newNote.value = note["Contents"];
+    newNote.value = (note["Contents"] || "");
     newNote.disabled = true;
     if(x == "-1"){
         newNote.style.left = Math.random() * 0.8 * window.screen.width  + 'px';
@@ -51,7 +71,7 @@ const createNoteHtml = function(note, x = "-1", y = "-1"){
         newNote.style.left = x;
         newNote.style.top  = y;
     }
-    
+
     createNote(note["ID"], note["Contents"], (noteDiv) => {
         newNote.setAttribute("id", "floating-note-" + noteDiv.getAttribute("id"));
     });
@@ -65,9 +85,7 @@ document.addEventListener('dblclick', function(event) {
         showNote(noteId);
     }
     else if (event.target.tagName == "HTML") {
-        connection.invoke("CreateNewNote").then( (newNoteId) => {
-            createNoteHtml( { "ID" : newNoteId, "Contents" : "" }, event.clientX + 'px', event.clientY + 'px');
-        });
+        connection.invoke("CreateNewNote");
     }
 });
 
@@ -77,8 +95,8 @@ document.addEventListener('mousedown',
             movingNote = event.target;
             isDown = true;
             offset = [
-                movingNote.offsetLeft - event.clientX,
-                movingNote.offsetTop - event.clientY
+                movingNote.offsetLeft - event.pageX,
+                movingNote.offsetTop  - event.pageY
             ];
         }
     }
@@ -91,10 +109,14 @@ document.addEventListener('mouseup', function () {
 document.addEventListener('mousemove', function (event) {
     if (isDown) {
         event.preventDefault();
+
         mousePosition = {
-            x: event.clientX,
-            y: event.clientY
+            x: event.pageX,
+            y: event.pageY
         };
+
+        console.log(mousePosition);
+        
         movingNote.style.left = (mousePosition.x + offset[0]) + 'px';
         movingNote.style.top = (mousePosition.y + offset[1]) + 'px';
     }
@@ -115,15 +137,14 @@ closeNoteCallBack = function(noteId) {
         
     let newContents = document.getElementById("display-opened-note-" + noteId).value;
     
-    connection.invoke("UpdateNote", intId, newContents).then((res) => {
-        //console.log(res);
+    connection.invoke("UpdateNote", intId, newContents).then(() => {
         updateAllNotes();
     });
 };
 
 const updateAllNotes = function() {
     connection.invoke("GetNotes").then( (data) => {
-        UpdateAllNotesAndFloatingNotes(JSON.parse(data));
+        updateAllNotesAndFloatingNotes(JSON.parse(data));
     });
 };
 

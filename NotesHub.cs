@@ -34,25 +34,29 @@ namespace itr6
                 _context.Notes.Update(note);
                 await _context.SaveChangesAsync();
             }
+
+            await this.Clients.All.SendAsync("GoUpdateYall");
         }
 
-        public string CreateNewNote()
+        public async Task CreateNewNote()
         {
             Note newNote = new Note();
+            newNote.Contents = "";
             newNote.DateCreated = DateTime.Now;
             newNote.LastModified = DateTime.Now;
 
             _context.Add<Note>(newNote);
             _context.SaveChanges();
 
-            return Convert.ToString(newNote.ID);
+            await this.Clients.All.SendAsync("CreateNewNote", JsonSerializer.Serialize(newNote));
         }
 
-        public void DeleteNote(string noteId)
+        public async Task DeleteNote(string noteId)
         {
             Note note = _context.Notes.Find(Convert.ToInt32(noteId));
             if(note != null)
             {
+                await this.Clients.All.SendAsync("DeleteNote", noteId);
                 _context.Notes.Remove(note);
                 _context.SaveChanges();
             }
