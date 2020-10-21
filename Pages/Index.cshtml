@@ -5,16 +5,9 @@
     ViewData["Title"] = "Home page";
 }
 
-<style>
-    textarea {
-        resize: both;
-        position: absolute;
-    }
-</style>
-
-<button onclick="createNewNote()">New Note</button>
-
+<link rel="stylesheet" type="text/css" href="~/css/note/notes.css">
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/note/notes.js"></script>
 
 <script>
 
@@ -25,13 +18,9 @@
     }).then(() => {
     const notes = @Json.Serialize(Model.GetNotes());
         notes.forEach( (note) => {
-            createNewNote(note["contents"]);
+            createNoteHtml(note);
         });
     });
-
-    const addNewNote = function(){
-        connection.invoke("AddNewNote", document.getElementById("note-contents").value);
-    }
 
 </script>
 
@@ -43,22 +32,41 @@
     let isDown = false;
     let movingNote;
 
-    const createNewNote = function(contents){
+    const createNoteHtml = function(note){
         let newNote = document.createElement("textarea");
+        newNote.setAttribute("class", "floating-note");
+        newNote.value = note["contents"];
         newNote.disabled = true;
-        newNote.value = contents;
+        newNote.style.left = Math.random() * 0.8 * window.screen.width  + 'px';
+        newNote.style.top  = Math.random() * 0.8 * window.screen.height + 'px';
+
+        createNote(note["id"], note["contents"], (noteDiv) => {
+            //newNote.appendChild(noteDiv);
+            newNote.setAttribute("id", "floating-note-" + noteDiv.getAttribute("id"));
+        });
+
+        //newNote.setAttribute("id", note["id"]);
 
         document.body.appendChild(newNote);
     }
 
+    document.addEventListener('dblclick', function(event) {
+        if (event.target.getAttribute("class") == "floating-note") {
+            const noteId = event.target.id.split("-")[2];
+            showNote(noteId);
+        }
+    });
+
     document.addEventListener('mousedown',
-        function (e) {
-            movingNote = e.target;
-            isDown = true;
-            offset = [
-                movingNote.offsetLeft - e.clientX,
-                movingNote.offsetTop - e.clientY
-            ];
+        function (event) {
+            if(event.target.getAttribute("class") == "floating-note"){
+                movingNote = event.target;
+                isDown = true;
+                offset = [
+                    movingNote.offsetLeft - event.clientX,
+                    movingNote.offsetTop - event.clientY
+                ];
+            }
         }
     );
 
@@ -67,15 +75,17 @@
     });
 
     document.addEventListener('mousemove', function (event) {
-        event.preventDefault();
-        if (isDown) {
-            mousePosition = {
-                x: event.clientX,
-                y: event.clientY
-            };
-            movingNote.style.left = (mousePosition.x + offset[0]) + 'px';
-            movingNote.style.top = (mousePosition.y + offset[1]) + 'px';
-        }
+        //if(event.target.getAttribute("class") == "floating-note"){
+            if (isDown) {
+                event.preventDefault();
+                mousePosition = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+                movingNote.style.left = (mousePosition.x + offset[0]) + 'px';
+                movingNote.style.top = (mousePosition.y + offset[1]) + 'px';
+            }
+        //}
     });
 
 </script>

@@ -29,6 +29,7 @@ namespace itr6
             services.AddRazorPages();
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("DatabaseContext")));
+                // options.UseSqlite(Configuration.GetConnectionString("RemoteDatabase")));
             
             services.AddSignalR();
         }
