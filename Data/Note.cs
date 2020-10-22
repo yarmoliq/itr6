@@ -37,6 +37,8 @@ namespace itr6.Data
             Color = "#ffcff7";
             posX = 50;
             posY = 50;
+            width  = 100;
+            height = 100;
         }
 
         public static bool operator ==(Note one, Note two)
