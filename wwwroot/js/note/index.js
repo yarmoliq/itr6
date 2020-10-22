@@ -53,8 +53,10 @@ deleteNoteCallback = function (note) {
 closeNoteCallback = function (note) {
     let floatingNote = document.getElementById("floating-note-" + note["ID"]);
 
-    note["posX"] = parseInt(floatingNote.style.left.replace('px', ''));
-    note["posY"] = parseInt(floatingNote.style.top.replace('px', ''));
+    note["posX"]   = parseInt(floatingNote.style.left.  replace('px', ''));
+    note["posY"]   = parseInt(floatingNote.style.top.   replace('px', ''));
+    note["width"]  = parseInt(floatingNote.style.width. replace('px', ''));
+    note["height"] = parseInt(floatingNote.style.height.replace('px', ''));
 
     connection.invoke("ChangeNote", JSON.stringify(note));
 }
@@ -66,8 +68,10 @@ const createFloatingNote = function (note) {
     let newNote = document.createElement("textarea");
     newNote.setAttribute("class", "floating-note");
     newNote.value = (note["Contents"] || "");
-    newNote.style.left = note["posX"] + 'px';
-    newNote.style.top = note["posY"] + 'px';
+    newNote.style.left   =  note["posX"]   + 'px';
+    newNote.style.top    =  note["posY"]   + 'px';
+    newNote.style.width  =  note["width"]  + 'px';
+    newNote.style.height =  note["height"] + 'px';
     newNote.style.backgroundColor = note["Color"];
     newNote.disabled = true;
     newNote.setAttribute("id", "floating-note-" + note["ID"]);

@@ -30,10 +30,12 @@ namespace itr6
             Note dbNote = _context.Notes.Find(editedNote.ID);
             if(editedNote != dbNote)
             {
-                dbNote.Contents = editedNote.Contents;
-                dbNote.Color = editedNote.Color;
-                dbNote.posX = editedNote.posX;
-                dbNote.posY = editedNote.posY;
+                dbNote.Contents     = editedNote.Contents;
+                dbNote.Color        = editedNote.Color;
+                dbNote.posX         = editedNote.posX;
+                dbNote.posY         = editedNote.posY;
+                dbNote.width        = editedNote.width;
+                dbNote.height       = editedNote.height;
                 dbNote.LastModified = DateTime.UtcNow;
                 
                 _context.Notes.Update(dbNote);

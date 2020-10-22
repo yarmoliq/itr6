@@ -6,6 +6,7 @@
 <link rel="stylesheet" type="text/css" href="~/css/note/notes.css">
 <link rel="stylesheet" type="text/css" href="~/css/note/floatingNotes.css">
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
 <script src="~/js/note/notes.js"></script>
 <script src="~/js/note/index.js"></script>
 
@@ -42,8 +43,10 @@ connection.on("UpdateNote", (jsonNote) => {
     let floatingNote = document.getElementById("floating-note-" + note["ID"]);
     floatingNote.value = note["Contents"];
     floatingNote.style.backgroundColor = note["Color"];
-    floatingNote.style.left = note["posX"] + 'px';
-    floatingNote.style.top  = note["posy"] + 'px';
+    floatingNote.style.left    = note["posX"]   + 'px';
+    floatingNote.style.top     = note["posy"]   + 'px';
+    floatingNote.style.width   = note["width"]  + 'px';
+    floatingNote.style.height  = note["height"] + 'px';
 });
 
 </script>

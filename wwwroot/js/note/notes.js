@@ -1,4 +1,4 @@
-let yellowCallback      = function () { }
+let yellowCallback = function () { }
 let pinkCallback        = function () { }
 let blueCallback        = function () { }
 let closeNoteCallback   = function () { }
@@ -13,7 +13,7 @@ toolBar.setAttribute("class", "topnav");
 toolBar.innerHTML = '<div class="topnav-el fl" onclick="yellowCallback()" >yellow</div>'     +
                     '<div class="topnav-el fl" onclick="pinkCallback()"   >pink</div >'      +
                     '<div class="topnav-el fl" onclick="blueCallback()"   >blue</div >'      +
-                    '<div class="topnav-el fl" id="view-switch" onclick="switchView()"   >Raw</div >'      +
+                    '<div class="topnav-el fl" id="view-switch" onclick="switchMarkdown()"   >MD</div >'      +
                     '<div class="topnav-el fr" onclick="closeNote()"      >&times;</div>'    +
                     '<div class="topnav-el fr" onclick="deleteNote()"     >&#128465;</div>';
 
@@ -23,7 +23,11 @@ noteWindow.setAttribute("class", "display-note-window");
 let textArea = document.createElement("textarea");
 textArea.setAttribute("class", "display-note-textarea");
 
+let markDown = document.createElement("div");
+markDown.style.display = "none";
+
 noteWindow.appendChild(textArea);
+noteWindow.appendChild(markDown);
 displayNote.appendChild(toolBar);
 displayNote.appendChild(noteWindow);
 document.body.appendChild(displayNote);
@@ -39,6 +43,9 @@ const showNote = function (note) {
 
 const closeNote = function () {
     displayNote.style.display = "none";
+    
+    hideMarkDown();
+    
     currentDisplayingNote["Contents"] = textArea.value;
     currentDisplayingNote["Color"] = textArea.style.backgroundColor;
     closeNoteCallback(currentDisplayingNote);
@@ -49,7 +56,32 @@ const deleteNote = function () {
     deleteNoteCallback(currentDisplayingNote);
 }
 
-const switchView = function () {
+const converter = new showdown.Converter();
+
+const switchMarkdown = function () {
     let sw = document.getElementById("view-switch");
-    sw.innerHTML = (sw.innerHTML == "Raw") ? "MD" : "Raw";
+    if (sw.innerHTML == "Raw") {
+        hideMarkDown();        
+    }
+    else {
+        showMarkDown();
+    }
+}
+
+const showMarkDown = function () {
+    let sw = document.getElementById("view-switch");
+
+    sw.innerHTML = "Raw";
+    textArea.style.display = "none";
+
+    markDown.innerHTML = converter.makeHtml(textArea.value);
+    markDown.style.display = "block";
+}
+
+const hideMarkDown = function () {
+    let sw = document.getElementById("view-switch");
+
+    sw.innerHTML = "MD";
+    textArea.style.display = "block";
+    markDown.style.display = "none";
 }

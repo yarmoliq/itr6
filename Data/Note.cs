@@ -20,6 +20,8 @@ namespace itr6.Data
         public string Color { get; set; }
         public int posX { get; set; }
         public int posY { get; set; }
+        public int width { get; set; }
+        public int height { get; set; }
 
         public Note()
         {
