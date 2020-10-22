@@ -28,7 +28,7 @@ namespace itr6
         {
             Note editedNote = JsonSerializer.Deserialize<Note>(jsonNote);
             Note dbNote = _context.Notes.Find(editedNote.ID);
-            if(editedNote != dbNote)
+            if(dbNote != null)
             {
                 dbNote.Contents     = editedNote.Contents;
                 dbNote.Color        = editedNote.Color;

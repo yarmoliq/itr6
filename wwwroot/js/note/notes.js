@@ -1,6 +1,3 @@
-let yellowCallback = function () { }
-let pinkCallback        = function () { }
-let blueCallback        = function () { }
 let closeNoteCallback   = function () { }
 let deleteNoteCallback  = function () { }
 
@@ -10,9 +7,9 @@ displayNote.setAttribute("id", "display-note");
 
 let toolBar = document.createElement("div");
 toolBar.setAttribute("class", "topnav");
-toolBar.innerHTML = '<div class="topnav-el fl" onclick="yellowCallback()" >yellow</div>'     +
-                    '<div class="topnav-el fl" onclick="pinkCallback()"   >pink</div >'      +
-                    '<div class="topnav-el fl" onclick="blueCallback()"   >blue</div >'      +
+toolBar.innerHTML = '<div class="topnav-el fl" onclick="yellow()" >yellow</div>'     +
+                    '<div class="topnav-el fl" onclick="pink()"   >pink</div >'      +
+                    '<div class="topnav-el fl" onclick="blue()"   >blue</div >'      +
                     '<div class="topnav-el fl" id="view-switch" onclick="switchMarkdown()"   >MD</div >'      +
                     '<div class="topnav-el fr" onclick="closeNote()"      >&times;</div>'    +
                     '<div class="topnav-el fr" onclick="deleteNote()"     >&#128465;</div>';
@@ -84,4 +81,16 @@ const hideMarkDown = function () {
     sw.innerHTML = "MD";
     textArea.style.display = "block";
     markDown.style.display = "none";
+}
+
+const yellow = function () {
+    textArea.style.backgroundColor = "rgb(255, 253, 181)";
+}
+
+const blue = function () {
+    textArea.style.backgroundColor = "rgb(181, 219, 255)";
+}
+
+const pink = function () {
+    textArea.style.backgroundColor = "rgb(255, 207, 247)";
 }

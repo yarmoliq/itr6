@@ -10,13 +10,19 @@ namespace itr6.Data
     {
         public int ID { get; set; }
 
-        [DataType(DataType.Date)]
+        // [DataType(DataType.DateTime)]
+        [DataType(DataType.Text)]
         public DateTime DateCreated { get; set; }
         
-        [DataType(DataType.Date)]
+        // [DataType(DataType.DateTime)]
+        [DataType(DataType.Text)]
         public DateTime LastModified { get; set; }
+
+        [DataType(DataType.MultilineText)]
         public string Contents { get; set; }
 
+
+        [DataType(DataType.Text)]
         public string Color { get; set; }
         public int posX { get; set; }
         public int posY { get; set; }
