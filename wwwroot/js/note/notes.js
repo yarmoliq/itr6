@@ -1,60 +1,55 @@
-let closeNoteCallBack = function (noteId) { }
-let deleteNoteCallBack = function (noteId) { }
+let yellowCallback      = function () { }
+let pinkCallback        = function () { }
+let blueCallback        = function () { }
+let closeNoteCallback   = function () { }
+let deleteNoteCallback  = function () { }
 
-const createNote = function (noteId, contents, callBack) {
-    noteId = "note" + noteId;
-    
-    let newNote = document.createElement("div");
-    newNote.setAttribute("class", "display-note");
-    newNote.setAttribute("id", noteId);
-    
-    let noteContent = document.createElement("div");
-    noteContent.setAttribute("class", "display-note-content");
-    
-    let closeButton = document.createElement("div");
-    closeButton.innerHTML = "&times;";
-    closeButton.setAttribute("class", "display-close-note");
-    closeButton.setAttribute("id", "close-" + noteId);
-    closeButton.setAttribute("onclick", "closeNote(this.id)");
-    noteContent.appendChild(closeButton);
+let displayNote = document.createElement("div");
+displayNote.setAttribute("class", "display-note");
+displayNote.setAttribute("id", "display-note");
 
-    let trashButton = document.createElement("div");
-    trashButton.innerHTML = "&#128465;"
-    trashButton.setAttribute("class", "display-trash-note");
-    trashButton.setAttribute("id", "trash-" + noteId);
-    trashButton.setAttribute("onclick", "deleteNote(this.id)");
-    noteContent.appendChild(trashButton);
-    
-    let textArea = document.createElement("textarea");
-    textArea.setAttribute("class", "display-opened-note");
-    textArea.setAttribute("id", "display-opened-note-" + noteId);
-    textArea.value = contents;
-    noteContent.appendChild(textArea);
+let toolBar = document.createElement("div");
+toolBar.setAttribute("class", "topnav");
+toolBar.innerHTML = '<div class="topnav-el fl" onclick="yellowCallback()" >yellow</div>'     +
+                    '<div class="topnav-el fl" onclick="pinkCallback()"   >pink</div >'      +
+                    '<div class="topnav-el fl" onclick="blueCallback()"   >blue</div >'      +
+                    '<div class="topnav-el fl" id="view-switch" onclick="switchView()"   >Raw</div >'      +
+                    '<div class="topnav-el fr" onclick="closeNote()"      >&times;</div>'    +
+                    '<div class="topnav-el fr" onclick="deleteNote()"     >&#128465;</div>';
 
-    newNote.appendChild(noteContent);
+let noteWindow = document.createElement("div");
+noteWindow.setAttribute("class", "display-note-window");
 
-    document.body.appendChild(newNote);
+let textArea = document.createElement("textarea");
+textArea.setAttribute("class", "display-note-textarea");
 
-    callBack(newNote);
+noteWindow.appendChild(textArea);
+displayNote.appendChild(toolBar);
+displayNote.appendChild(noteWindow);
+document.body.appendChild(displayNote);
+
+let currentDisplayingNote;
+
+const showNote = function (note) {
+    displayNote.style.display = "block";
+    textArea.value = note["Contents"];
+    textArea.style.backgroundColor = note["Color"];
+    currentDisplayingNote = note;
 };
 
-const showNote = function (noteId) {
-    let note = document.getElementById(noteId);
-    note.style.display = "block";
+const closeNote = function () {
+    displayNote.style.display = "none";
+    currentDisplayingNote["Contents"] = textArea.value;
+    currentDisplayingNote["Color"] = textArea.style.backgroundColor;
+    closeNoteCallback(currentDisplayingNote);
 };
 
-const closeNote = function (buttonId) {
-    const noteId = buttonId.split("-")[1];
-    let note = document.getElementById(noteId);
-    note.style.display = "none";
+const deleteNote = function () {
+    displayNote.style.display = "none";
+    deleteNoteCallback(currentDisplayingNote);
+}
 
-    closeNoteCallBack(noteId);
-};
-
-const deleteNote = function (buttonId) {
-    const noteId = buttonId.split("-")[1];
-    let note = document.getElementById(noteId);
-    note.parentNode.removeChild(note);
-
-    deleteNoteCallBack(noteId);
+const switchView = function () {
+    let sw = document.getElementById("view-switch");
+    sw.innerHTML = (sw.innerHTML == "Raw") ? "MD" : "Raw";
 }

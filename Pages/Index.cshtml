@@ -1,13 +1,13 @@
 ﻿@page
-@inject IJsonHelper Json;
-@model IndexModel
 @{
     ViewData["Title"] = "Home page";
 }
 
 <link rel="stylesheet" type="text/css" href="~/css/note/notes.css">
+<link rel="stylesheet" type="text/css" href="~/css/note/floatingNotes.css">
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/note/notes.js"></script>
+<script src="~/js/note/index.js"></script>
 
 <script>
 
@@ -19,133 +19,31 @@ connection.start().catch(err=>{
     connection.invoke("GetNotes").then( (data) => {
         const notes = JSON.parse(data);
         notes.forEach( (note) => {
-            createNoteHtml(note);
+            createFloatingNote(note);
         });
     });
 });
 
-connection.on("GoUpdateYall", () => {
-    updateAllNotes();
-});
+connection.on("DeleteNote", (jsonNote) => {
+    let note = JSON.parse(jsonNote);
 
-connection.on("DeleteNote", (noteId) => {
-    noteId = "note" + noteId;
-
-    deleteNote("smth-" + noteId); // because my delete function is stupid  :|
-
-    let floatingNoteId = "floating-note-" + noteId;
-    let floatingNote = document.getElementById(floatingNoteId);
+    let floatingNote = document.getElementById("floating-note-" + note["ID"]);
     floatingNote.parentNode.removeChild(floatingNote);
-
-    let intId = noteId.split("").slice(4).join("");
 });
 
-connection.on("CreateNewNote", (note) => {
-    createNoteHtml(JSON.parse(note));
+connection.on("CreateNote", (jsonNote) => {
+    let note = JSON.parse(jsonNote);
+    createFloatingNote(note);
 });
 
-const updateAllNotesAndFloatingNotes = function (notes) {
-    notes.forEach( (note) => {
-        const noteId = "note" + note["ID"];
-        document.getElementById("display-opened-note-" + noteId).value = note["Contents"];
-        document.getElementById("floating-note-" + noteId).value = note["Contents"];
-    });
-};
+connection.on("UpdateNote", (jsonNote) => {
+    let note = JSON.parse(jsonNote);
 
-let mousePosition;
-let offset = [0, 0];
-let div;
-let isDown = false;
-let movingNote;
-
-const createNoteHtml = function(note, x = "-1", y = "-1"){
-    let newNote = document.createElement("textarea");
-    newNote.setAttribute("class", "floating-note");
-    newNote.value = (note["Contents"] || "");
-    newNote.disabled = true;
-    if(x == "-1"){
-        newNote.style.left = Math.random() * 0.8 * window.screen.width  + 'px';
-        newNote.style.top  = Math.random() * 0.8 * window.screen.height + 'px';
-    }
-    else {
-        newNote.style.left = x;
-        newNote.style.top  = y;
-    }
-
-    createNote(note["ID"], note["Contents"], (noteDiv) => {
-        newNote.setAttribute("id", "floating-note-" + noteDiv.getAttribute("id"));
-    });
-
-    document.body.appendChild(newNote);
-};
-
-document.addEventListener('dblclick', function(event) {
-    if (event.target.getAttribute("class") == "floating-note") {
-        const noteId = event.target.id.split("-")[2];
-        showNote(noteId);
-    }
-    else if (event.target.tagName == "HTML") {
-        connection.invoke("CreateNewNote");
-    }
+    let floatingNote = document.getElementById("floating-note-" + note["ID"]);
+    floatingNote.value = note["Contents"];
+    floatingNote.style.backgroundColor = note["Color"];
+    floatingNote.style.left = note["posX"] + 'px';
+    floatingNote.style.top  = note["posy"] + 'px';
 });
-
-document.addEventListener('mousedown',
-    function (event) {
-        if(event.target.getAttribute("class") == "floating-note"){
-            movingNote = event.target;
-            isDown = true;
-            offset = [
-                movingNote.offsetLeft - event.pageX,
-                movingNote.offsetTop  - event.pageY
-            ];
-        }
-    }
-);
-
-document.addEventListener('mouseup', function () {
-    isDown = false;
-});
-
-document.addEventListener('mousemove', function (event) {
-    if (isDown) {
-        event.preventDefault();
-
-        mousePosition = {
-            x: event.pageX,
-            y: event.pageY
-        };
-
-        console.log(mousePosition);
-        
-        movingNote.style.left = (mousePosition.x + offset[0]) + 'px';
-        movingNote.style.top = (mousePosition.y + offset[1]) + 'px';
-    }
-});
-
-deleteNoteCallBack = function(noteId) {
-    let floatingNoteId = "floating-note-" + noteId;
-    let floatingNote = document.getElementById(floatingNoteId);
-    floatingNote.parentNode.removeChild(floatingNote);
-
-    let intId = noteId.split("").slice(4).join("");
-    connection.invoke("DeleteNote", intId);
-};
-
-closeNoteCallBack = function(noteId) {
-    let closedNote = document.getElementById(noteId);
-    let intId = noteId.split("").slice(4).join("");
-        
-    let newContents = document.getElementById("display-opened-note-" + noteId).value;
-    
-    connection.invoke("UpdateNote", intId, newContents).then(() => {
-        updateAllNotes();
-    });
-};
-
-const updateAllNotes = function() {
-    connection.invoke("GetNotes").then( (data) => {
-        updateAllNotesAndFloatingNotes(JSON.parse(data));
-    });
-};
 
 </script>
