@@ -36,8 +36,6 @@ connection.on("DeleteNote", (jsonNote) => {
 connection.on("CreateNote", (jsonNote) => {
     let note = JSON.parse(jsonNote);
     createFloatingNote(note);
-}).catch( err => {
-    console.log(err);
 });
 
 connection.on("UpdateNote", (jsonNote) => {
