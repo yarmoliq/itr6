@@ -16,6 +16,7 @@ let connection = new signalR.HubConnectionBuilder().withUrl("/noteshub").build()
 
 connection.start().catch(err=>{
     alert("couldnt connect");
+    console.log(err);
 }).then(() => {
     connection.invoke("GetNotes").then( (data) => {
         const notes = JSON.parse(data);
